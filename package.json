@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "NWT Info (Next World Tech) - Digital Services & Project Booking Platform",
   "scripts": {
+    "dev": "concurrently -n \"SERVER,CLIENT\" -c \"blue,magenta\" \"npm run dev:server\" \"npm run dev:client\"",
     "dev:server": "npm --prefix server run dev",
     "dev:client": "npm --prefix client run dev",
     "seed": "npm --prefix server run seed",
@@ -10,7 +11,17 @@
     "install:all": "npm install && npm --prefix server install && npm --prefix client install",
     "build": "npm --prefix client run build"
   },
-  "keywords": ["mern", "digital-services", "booking-platform", "razorpay", "react", "vite"],
+  "keywords": [
+    "mern",
+    "digital-services",
+    "booking-platform",
+    "razorpay",
+    "react",
+    "vite"
+  ],
   "author": "Next World Tech (NWT Info)",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^10.0.7"
+  }
 }
