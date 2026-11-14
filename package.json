@@ -1,0 +1,16 @@
+{
+  "name": "nwt-info-platform",
+  "version": "1.0.0",
+  "description": "NWT Info (Next World Tech) - Digital Services & Project Booking Platform",
+  "scripts": {
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "seed": "npm --prefix server run seed",
+    "test": "npm --prefix server test",
+    "install:all": "npm install && npm --prefix server install && npm --prefix client install",
+    "build": "npm --prefix client run build"
+  },
+  "keywords": ["mern", "digital-services", "booking-platform", "razorpay", "react", "vite"],
+  "author": "Next World Tech (NWT Info)",
+  "license": "ISC"
+}

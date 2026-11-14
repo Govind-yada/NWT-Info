@@ -1,0 +1,185 @@
+import React, { useState, useEffect } from 'react';
+import api from '../../services/api';
+import {
+  CreditCard,
+  DollarSign,
+  CheckCircle2,
+  AlertCircle,
+  Filter,
+  Search,
+  ArrowUpRight,
+  ShieldCheck,
+} from 'lucide-react';
+
+export const AdminPayments = () => {
+  const [payments, setPayments] = useState([]);
+  const [summary, setSummary] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [typeFilter, setTypeFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+
+  const fetchPayments = async () => {
+    try {
+      let url = '/admin/payments?';
+      if (typeFilter) url += `&type=${typeFilter}`;
+      if (statusFilter) url += `&status=${statusFilter}`;
+
+      const res = await api.get(url);
+      if (res.data.success) {
+        setPayments(res.data.data);
+        setSummary(res.data.summary || {});
+      }
+    } catch (err) {
+      console.error('Error fetching admin payments:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPayments();
+  }, [typeFilter, statusFilter]);
+
+  return (
+    <div className="space-y-6">
+      
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-white">Payment & Revenue Ledger</h1>
+        <p className="text-xs text-slate-400 mt-0.5">
+          Audited Razorpay payment records, 30% advances, and 70% remaining balance settlements
+        </p>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div className="glass-card rounded-2xl p-5 space-y-2 border-l-4 border-l-emerald-500">
+          <span className="text-xs text-slate-400 font-medium">Total Revenue Settled</span>
+          <span className="text-2xl font-extrabold text-white block">
+            ₹{(summary.totalRevenue || 0).toLocaleString('en-IN')}
+          </span>
+          <span className="text-[10px] text-slate-500">All successful transactions</span>
+        </div>
+
+        <div className="glass-card rounded-2xl p-5 space-y-2 border-l-4 border-l-blue-500">
+          <span className="text-xs text-slate-400 font-medium">30% Advance Payments</span>
+          <span className="text-2xl font-extrabold text-brand-electric block">
+            ₹{(summary.advanceReceived || 0).toLocaleString('en-IN')}
+          </span>
+          <span className="text-[10px] text-slate-500">Initial project booking deposits</span>
+        </div>
+
+        <div className="glass-card rounded-2xl p-5 space-y-2 border-l-4 border-l-purple-500">
+          <span className="text-xs text-slate-400 font-medium">70% Remaining Balances</span>
+          <span className="text-2xl font-extrabold text-purple-400 block">
+            ₹{(summary.remainingReceived || 0).toLocaleString('en-IN')}
+          </span>
+          <span className="text-[10px] text-slate-500">Milestone handover payments</span>
+        </div>
+      </div>
+
+      {/* Filter Bar */}
+      <div className="glass-panel p-4 rounded-2xl flex flex-wrap items-center gap-3 text-xs">
+        <span className="text-slate-400 font-semibold uppercase text-[10px]">Filter Ledger:</span>
+        
+        <button
+          onClick={() => setTypeFilter('')}
+          className={`px-3 py-1.5 rounded-lg font-medium transition ${
+            typeFilter === '' ? 'bg-violet-600 text-white' : 'bg-slate-900 text-slate-400 hover:text-white'
+          }`}
+        >
+          All Types
+        </button>
+        <button
+          onClick={() => setTypeFilter('advance')}
+          className={`px-3 py-1.5 rounded-lg font-medium transition ${
+            typeFilter === 'advance' ? 'bg-violet-600 text-white' : 'bg-slate-900 text-slate-400 hover:text-white'
+          }`}
+        >
+          30% Advance Only
+        </button>
+        <button
+          onClick={() => setTypeFilter('remaining')}
+          className={`px-3 py-1.5 rounded-lg font-medium transition ${
+            typeFilter === 'remaining' ? 'bg-violet-600 text-white' : 'bg-slate-900 text-slate-400 hover:text-white'
+          }`}
+        >
+          70% Balance Only
+        </button>
+      </div>
+
+      {/* Ledger Table */}
+      <div className="glass-panel rounded-3xl overflow-hidden border border-slate-800">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-navy-950/80 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+              <tr>
+                <th className="px-5 py-4">Receipt Ref</th>
+                <th className="px-5 py-4">Customer</th>
+                <th className="px-5 py-4">Project Order</th>
+                <th className="px-5 py-4">Payment Type</th>
+                <th className="px-5 py-4">Amount</th>
+                <th className="px-5 py-4">Razorpay Order & Payment ID</th>
+                <th className="px-5 py-4">Timestamp</th>
+                <th className="px-5 py-4">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800/60">
+              {loading ? (
+                <tr>
+                  <td colSpan="8" className="px-5 py-8 text-center text-slate-500">
+                    Loading ledger entries...
+                  </td>
+                </tr>
+              ) : payments.length > 0 ? (
+                payments.map((p) => (
+                  <tr key={p._id} className="hover:bg-slate-900/40 transition">
+                    <td className="px-5 py-4 font-mono font-bold text-violet-400">
+                      {p.paymentReference}
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className="text-white font-semibold block">{p.userId?.name || 'Customer'}</span>
+                      <span className="text-[10px] text-slate-400">{p.userId?.email}</span>
+                    </td>
+                    <td className="px-5 py-4 font-medium text-slate-200">
+                      {p.orderId?.orderNumber}
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${
+                        p.type === 'advance' ? 'bg-blue-500/10 text-brand-electric' : 'bg-emerald-500/10 text-emerald-400'
+                      }`}>
+                        {p.type === 'advance' ? '30% Advance' : '70% Balance'}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4 font-extrabold text-white">
+                      ₹{p.amount.toLocaleString('en-IN')}
+                    </td>
+                    <td className="px-5 py-4 font-mono text-[10px] text-slate-400">
+                      <div>{p.razorpayOrderId}</div>
+                      <div className="text-slate-500">{p.razorpayPaymentId || 'pending'}</div>
+                    </td>
+                    <td className="px-5 py-4 text-slate-400">
+                      {new Date(p.createdAt).toLocaleString()}
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Success
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="8" className="px-5 py-8 text-center text-slate-500">
+                    No transactions match the selected filters.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  );
+};
