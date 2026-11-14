@@ -16,7 +16,6 @@ import {
   CreditCard,
   Calendar,
   ChevronDown,
-  ExternalLink,
   Star,
   Zap,
 } from 'lucide-react';
@@ -24,7 +23,6 @@ import {
 export const Home = () => {
   const { openBookingModal } = useBooking();
   const [services, setServices] = useState([]);
-  const [portfolios, setPortfolios] = useState([]);
   const [testimonials, setTestimonials] = useState([]);
   const [faqs, setFaqs] = useState([]);
   const [activeCategory, setActiveCategory] = useState('All');
@@ -34,15 +32,13 @@ export const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [servicesRes, portfoliosRes, testimonialsRes, faqsRes] = await Promise.all([
+        const [servicesRes, testimonialsRes, faqsRes] = await Promise.all([
           api.get('/services'),
-          api.get('/content/portfolios?featured=true'),
           api.get('/content/testimonials'),
           api.get('/content/faqs'),
         ]);
 
         if (servicesRes.data.success) setServices(servicesRes.data.data);
-        if (portfoliosRes.data.success) setPortfolios(portfoliosRes.data.data);
         if (testimonialsRes.data.success) setTestimonials(testimonialsRes.data.data);
         if (faqsRes.data.success) setFaqs(faqsRes.data.data);
       } catch (err) {
@@ -299,63 +295,7 @@ export const Home = () => {
         </div>
       </section>
 
-      {/* 6. OUR WORK / PORTFOLIO SHOWCASE */}
-      {portfolios.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-widest text-brand-electric block mb-2">
-                Proven Track Record
-              </span>
-              <h3 className="text-3xl font-extrabold text-white">Featured Client Projects</h3>
-            </div>
-            <Link
-              to="/portfolio"
-              className="mt-4 sm:mt-0 inline-flex items-center gap-1.5 text-xs font-semibold text-brand-blue hover:text-blue-400 transition"
-            >
-              View All Case Studies <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {portfolios.slice(0, 4).map((item) => (
-              <div key={item._id} className="group glass-card rounded-2xl overflow-hidden hover:shadow-glow transition">
-                <div className="relative h-64 overflow-hidden bg-slate-900">
-                  <img
-                    src={item.thumbnail}
-                    alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-transparent to-transparent"></div>
-                  <div className="absolute top-4 left-4 px-3 py-1 rounded-lg bg-navy-950/80 backdrop-blur-md border border-slate-700 text-[11px] font-semibold text-brand-electric">
-                    {item.category}
-                  </div>
-                </div>
-
-                <div className="p-6">
-                  <span className="text-[11px] text-slate-400 font-medium block mb-1">{item.clientName}</span>
-                  <h4 className="text-lg font-bold text-white group-hover:text-blue-400 transition">
-                    {item.title}
-                  </h4>
-                  <p className="text-xs text-slate-400 mt-2 line-clamp-2 leading-relaxed">
-                    {item.description}
-                  </p>
-
-                  <div className="flex flex-wrap gap-1.5 mt-4">
-                    {(item.tags || []).map((tag, tIdx) => (
-                      <span key={tIdx} className="px-2 py-0.5 rounded-md bg-slate-800 text-[10px] text-slate-300">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* 7. TESTIMONIALS */}
+      {/* 6. TESTIMONIALS */}
       {testimonials.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-14">

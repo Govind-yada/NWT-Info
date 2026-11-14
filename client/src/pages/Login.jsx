@@ -53,19 +53,6 @@ export const Login = () => {
     }
   };
 
-  const fillDemo = (role) => {
-    if (role === 'admin') {
-      setIsAdminMode(true);
-      setEmail('admin@nwtinfo.com');
-      setPassword('Admin@Nwt2026!');
-    } else {
-      setIsAdminMode(false);
-      setEmail('aarav@techventure.in');
-      setPassword('Customer@123');
-    }
-    setError(null);
-  };
-
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 sm:px-6 py-12">
       <div className="w-full max-w-md space-y-6">
@@ -114,27 +101,6 @@ export const Login = () => {
           >
             <ShieldCheck className="w-3.5 h-3.5" /> Admin Terminal
           </button>
-        </div>
-
-        {/* Demo Fast Fill Buttons */}
-        <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-[11px] text-slate-400 space-y-2">
-          <span className="font-medium text-slate-300 block">⚡ Quick Demo Credentials:</span>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => fillDemo('customer')}
-              className="flex-1 py-1 px-2 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-medium"
-            >
-              Fill Demo Client
-            </button>
-            <button
-              type="button"
-              onClick={() => fillDemo('admin')}
-              className="flex-1 py-1 px-2 rounded bg-violet-950 hover:bg-violet-900 text-violet-300 border border-violet-800/80 text-[10px] font-medium"
-            >
-              Fill Demo Admin
-            </button>
-          </div>
         </div>
 
         {/* Error Alert */}

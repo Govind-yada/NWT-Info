@@ -22,7 +22,11 @@ export const connectDB = async () => {
       try {
         console.log('[MongoDB] Starting embedded MongoDB Memory Server for local development...');
         const { MongoMemoryServer } = await import('mongodb-memory-server');
-        const mongod = await MongoMemoryServer.create();
+        const mongod = await MongoMemoryServer.create({
+          binary: {
+            version: process.env.MONGOMS_VERSION || '7.0.14',
+          },
+        });
         const memoryUri = mongod.getUri();
         const conn = await mongoose.connect(memoryUri);
         isMemoryServer = true;
