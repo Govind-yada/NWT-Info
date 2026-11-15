@@ -19,7 +19,7 @@ const settingSchema = new mongoose.Schema(
     },
     supportPhone: {
       type: String,
-      default: '+91 98765 43210',
+      default: '+91 7859088239',
       trim: true,
     },
     companyAddress: {

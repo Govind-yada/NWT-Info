@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Clock, Send, CheckCircle2, Sparkles, MessageSquare } from 'lucide-react';
+import { WhatsAppIcon } from '../components/WhatsAppIcon';
 
 export const Contact = () => {
   const [submitted, setSubmitted] = useState(false);
@@ -51,15 +52,44 @@ export const Contact = () => {
                 </div>
               </div>
 
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-purple-600/20 text-brand-violet flex items-center justify-center shrink-0">
+              {/* WhatsApp Direct Chat */}
+              <a
+                href="https://wa.me/917859088239?text=Hello%20NWT%20Info%2C%20I%20would%20like%20to%20discuss%20a%20project."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-start gap-3 p-3 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 hover:border-emerald-500/70 hover:bg-emerald-900/30 transition-all duration-200 group shadow-sm cursor-pointer"
+                title="Chat on WhatsApp (+91 7859088239)"
+              >
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-[#25D366] flex items-center justify-center shrink-0 group-hover:scale-110 shadow-[0_0_12px_rgba(37,211,102,0.3)] transition-transform">
+                  <WhatsAppIcon className="w-4 h-4 fill-current" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-white block">WhatsApp Direct:</span>
+                    <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                      Online
+                    </span>
+                  </div>
+                  <span className="text-emerald-400 font-mono font-semibold block mt-0.5 group-hover:underline">
+                    +91 7859088239
+                  </span>
+                  <span className="text-[10px] text-slate-400 block">Click to start instant WhatsApp chat</span>
+                </div>
+              </a>
+
+              {/* Phone */}
+              <a
+                href="tel:+917859088239"
+                className="flex items-start gap-3 group hover:text-white transition"
+              >
+                <div className="w-8 h-8 rounded-lg bg-purple-600/20 text-brand-violet flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                   <Phone className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="font-semibold text-white block">Call & WhatsApp:</span>
-                  <span>+91 98765 43210</span>
+                  <span className="font-semibold text-white block">Call Us:</span>
+                  <span className="text-slate-300 group-hover:text-violet-400 transition-colors">+91 7859088239</span>
                 </div>
-              </div>
+              </a>
 
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-lg bg-emerald-600/20 text-emerald-400 flex items-center justify-center shrink-0">

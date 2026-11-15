@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin, Shield, CheckCircle2, ArrowUpRight } from 'lucide-react';
+import { WhatsAppIcon } from './WhatsAppIcon';
 
 export const Footer = () => {
   return (
@@ -89,10 +90,23 @@ export const Footer = () => {
                 <MapPin className="w-4 h-4 text-brand-electric shrink-0 mt-0.5" />
                 <span>NWT Cyber Hub, Indiranagar 100ft Road, Bangalore 560038</span>
               </div>
-              <div className="flex items-center gap-2.5">
+              <a
+                href="https://wa.me/917859088239?text=Hello%20NWT%20Info%2C%20I%20would%20like%20to%20discuss%20a%20project."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2.5 text-emerald-400 hover:text-emerald-300 font-medium transition group"
+                title="Chat on WhatsApp (+91 7859088239)"
+              >
+                <WhatsAppIcon className="w-4 h-4 fill-current shrink-0 text-[#25D366] group-hover:scale-110 transition-transform" />
+                <span>WhatsApp: +91 7859088239</span>
+              </a>
+              <a
+                href="tel:+917859088239"
+                className="flex items-center gap-2.5 hover:text-white transition"
+              >
                 <Phone className="w-4 h-4 text-brand-electric shrink-0" />
                 <span>+91 7859088239</span>
-              </div>
+              </a>
               <div className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-brand-electric shrink-0" />
                 <span>contact@nwtinfo.com</span>

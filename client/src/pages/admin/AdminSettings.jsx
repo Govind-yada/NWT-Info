@@ -29,7 +29,7 @@ export const AdminSettings = () => {
     companyName: 'NWT Info (Next World Tech)',
     companyTagline: 'Engineering Next-Gen Digital Services & Scalable Tech',
     supportEmail: 'support@nwtinfo.com',
-    supportPhone: '+91 98765 43210',
+    supportPhone: '+91 7859088239',
     companyAddress: 'Cyber City, Phase 2, Gurugram, Haryana 122002, India',
     companyUpiId: 'nwtinfo@okaxis',
     companyPayeeName: 'NWT Info (Next World Tech)',

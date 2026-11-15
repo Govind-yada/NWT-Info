@@ -6,6 +6,7 @@ import { BookingProvider } from './context/BookingContext';
 // Components
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
+import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 import { MultiStepBookingModal } from './components/MultiStepBookingModal';
 import { ProtectedRoute, AdminProtectedRoute } from './components/ProtectedRoute';
 
@@ -46,12 +47,13 @@ import { AdminSettings } from './pages/admin/AdminSettings';
 // Public Layout with Navbar & Footer
 const PublicLayout = () => {
   return (
-    <div className="min-h-screen flex flex-col justify-between">
+    <div className="min-h-screen flex flex-col justify-between relative">
       <Navbar />
       <main className="flex-grow">
         <Outlet />
       </main>
       <Footer />
+      <FloatingWhatsApp />
     </div>
   );
 };
