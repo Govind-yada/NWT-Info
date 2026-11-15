@@ -1,0 +1,42 @@
+services:
+  - type: web
+    name: nwt-info-platform
+    env: node
+    plan: free
+    buildCommand: npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: MONGODB_URI
+        sync: false
+      - key: COMPANY_UPI_ID
+        value: nwtinfo@okaxis
+      - key: COMPANY_PAYEE_NAME
+        value: NWT Info (Next World Tech)
+      - key: RAZORPAY_KEY_ID
+        value: rzp_test_mockKeyId12345
+      - key: RAZORPAY_KEY_SECRET
+        value: mockRazorpaySecretKey987654
+      - key: RAZORPAY_WEBHOOK_SECRET
+        value: mockWebhookSecretKey54321
+      - key: CLOUDINARY_CLOUD_NAME
+        value: mock_cloud
+      - key: CLOUDINARY_API_KEY
+        value: mock_api_key
+      - key: CLOUDINARY_API_SECRET
+        value: mock_api_secret
+      - key: ADMIN_EMAIL
+        value: admin@nwtinfo.com
+      - key: ADMIN_PASSWORD
+        value: Admin@Nwt2026!
+      - key: ADMIN_NAME
+        value: NWT System Administrator

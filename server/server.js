@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 import { connectDB } from './src/config/db.js';
@@ -51,6 +52,7 @@ export const dbReady = connectDB()
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: 'cross-origin' },
+    contentSecurityPolicy: false, // Ensures Razorpay checkout.js and external fonts load without CSP blocks
   })
 );
 
@@ -59,6 +61,7 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
   process.env.CLIENT_URL,
+  process.env.RENDER_EXTERNAL_URL,
 ].filter(Boolean);
 
 app.use(
@@ -121,6 +124,24 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/calendar', calendarRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/content', contentRoutes);
+
+// Serve Static Frontend Build in Production
+const clientDistPath = fs.existsSync(path.resolve('client', 'dist'))
+  ? path.resolve('client', 'dist')
+  : path.resolve(__dirname, '../client/dist');
+
+if (fs.existsSync(clientDistPath)) {
+  console.log(`[Production] Serving static client build from: ${clientDistPath}`);
+  app.use(express.static(clientDistPath));
+
+  app.get('*', (req, res, next) => {
+    // If request is targeting an API or uploads route, delegate to 404 handler
+    if (req.originalUrl.startsWith('/api') || req.originalUrl.startsWith('/uploads')) {
+      return next();
+    }
+    res.sendFile(path.resolve(clientDistPath, 'index.html'));
+  });
+}
 
 // Error Handling Middlewares
 app.use(notFound);
