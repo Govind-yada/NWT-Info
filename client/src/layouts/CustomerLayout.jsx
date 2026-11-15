@@ -77,17 +77,6 @@ export const CustomerLayout = () => {
             </div>
           </Link>
 
-          {/* User Profile Card */}
-          <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-blue-600/20 text-brand-electric border border-blue-500/30 flex items-center justify-center font-bold text-sm">
-              {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
-            </div>
-            <div className="truncate">
-              <span className="text-xs font-bold text-white block truncate">{user?.name}</span>
-              <span className="text-[10px] text-slate-400 block truncate">{user?.company || user?.email}</span>
-            </div>
-          </div>
-
           {/* Navigation Links */}
           <nav className="space-y-1">
             {menuItems.map((item) => {
@@ -128,7 +117,7 @@ export const CustomerLayout = () => {
         </div>
 
         {/* Bottom Options */}
-        <div className="pt-4 border-t border-slate-800/80 space-y-2">
+        <div className="pt-4 border-t border-slate-800/80 space-y-2.5">
           {isAdmin && (
             <Link
               to="/admin"
@@ -145,6 +134,25 @@ export const CustomerLayout = () => {
           >
             <span>Visit Agency Website</span>
             <ExternalLink className="w-3.5 h-3.5" />
+          </Link>
+
+          {/* User Profile Card near Sign Out */}
+          <Link
+            to="/dashboard/profile"
+            className="p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800/80 border border-slate-800 flex items-center gap-3 transition group"
+            title="Profile Settings"
+          >
+            <div className="w-9 h-9 rounded-full bg-blue-600/20 text-brand-electric border border-blue-500/30 flex items-center justify-center font-bold text-xs shrink-0 group-hover:border-blue-400 transition">
+              {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+            </div>
+            <div className="truncate flex-1">
+              <span className="text-xs font-bold text-white block truncate group-hover:text-blue-400 transition">
+                {user?.name}
+              </span>
+              <span className="text-[10px] text-slate-400 block truncate">
+                {user?.email}
+              </span>
+            </div>
           </Link>
 
           <button

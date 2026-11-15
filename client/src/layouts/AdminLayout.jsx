@@ -76,17 +76,6 @@ export const AdminLayout = () => {
             </div>
           </Link>
 
-          {/* Admin Identity Card */}
-          <div className="p-3 rounded-xl bg-violet-950/40 border border-violet-800/40 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-violet-600/30 text-violet-300 flex items-center justify-center font-bold text-xs">
-              AD
-            </div>
-            <div className="truncate">
-              <span className="text-xs font-bold text-white block truncate">{user?.name}</span>
-              <span className="text-[10px] text-violet-300 block truncate">Super Administrator</span>
-            </div>
-          </div>
-
           {/* Nav List */}
           <nav className="space-y-1">
             {adminMenu.map((item) => {
@@ -113,10 +102,10 @@ export const AdminLayout = () => {
         </div>
 
         {/* Bottom Options */}
-        <div className="pt-4 border-t border-slate-800 space-y-2">
+        <div className="pt-4 border-t border-slate-800 space-y-2.5">
           <Link
             to="/dashboard"
-            className="flex items-center justify-between px-3 py-2 rounded-lg text-xs text-blue-400 hover:bg-slate-800 transition font-medium"
+            className="flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-blue-400 hover:bg-slate-800 transition font-medium"
           >
             <span>Customer View</span>
             <ExternalLink className="w-3.5 h-3.5" />
@@ -124,11 +113,22 @@ export const AdminLayout = () => {
 
           <Link
             to="/"
-            className="flex items-center justify-between px-3 py-2 rounded-lg text-xs text-slate-400 hover:text-white transition font-medium"
+            className="flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-white transition font-medium"
           >
             <span>Public Website</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </Link>
+
+          {/* Admin Identity Card near Sign Out */}
+          <div className="p-2.5 rounded-xl bg-violet-950/40 border border-violet-800/40 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-violet-600/30 text-violet-300 flex items-center justify-center font-bold text-xs shrink-0">
+              AD
+            </div>
+            <div className="truncate flex-1">
+              <span className="text-xs font-bold text-white block truncate">{user?.name}</span>
+              <span className="text-[10px] text-violet-300 block truncate">Super Administrator</span>
+            </div>
+          </div>
 
           <button
             onClick={handleLogout}
