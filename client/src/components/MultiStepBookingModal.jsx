@@ -480,7 +480,7 @@ export const MultiStepBookingModal = () => {
                 Upload your wireframes, logos, design references, briefs, or documents (Images, PDF, DOCX, ZIP up to 15MB each).
               </p>
 
-              <div className="border-2 border-dashed border-slate-800 hover:border-blue-500/50 rounded-2xl p-6 text-center bg-navy-950/50 transition">
+              <div className="relative border-2 border-dashed border-slate-800 hover:border-blue-500/50 rounded-2xl p-6 text-center bg-navy-950/50 transition overflow-hidden">
                 <Upload className="w-8 h-8 text-blue-400 mx-auto mb-2" />
                 <p className="text-xs text-slate-300 font-medium">Click to upload files</p>
                 <p className="text-[11px] text-slate-500 mt-1">Supports PNG, JPG, PDF, DOC, ZIP up to 15MB</p>
@@ -488,7 +488,7 @@ export const MultiStepBookingModal = () => {
                   type="file"
                   multiple
                   onChange={handleFileUpload}
-                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 />
               </div>
 
@@ -717,7 +717,7 @@ export const MultiStepBookingModal = () => {
 
         {/* Modal Footer Controls */}
         {currentStep < 6 && (
-          <div className="flex items-center justify-between px-6 py-4 border-t border-slate-800/80 bg-navy-950/50">
+          <div className="relative z-10 flex items-center justify-between px-6 py-4 border-t border-slate-800/80 bg-navy-950/50">
             {currentStep > 1 ? (
               <button
                 type="button"
