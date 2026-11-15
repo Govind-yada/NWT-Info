@@ -38,8 +38,9 @@ const paymentSchema = new mongoose.Schema(
     },
     razorpayOrderId: {
       type: String,
-      required: true,
+      required: false,
       index: true,
+      sparse: true,
     },
     razorpayPaymentId: {
       type: String,
@@ -49,15 +50,42 @@ const paymentSchema = new mongoose.Schema(
     razorpaySignature: {
       type: String,
     },
+    upiId: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    upiTransactionId: {
+      type: String,
+      trim: true,
+      index: true,
+      sparse: true,
+      default: '',
+    },
+    screenshotUrl: {
+      type: String,
+      default: '',
+    },
+    screenshotPublicId: {
+      type: String,
+      default: '',
+    },
     status: {
       type: String,
-      enum: ['created', 'success', 'failed', 'refunded'],
+      enum: ['created', 'pending_verification', 'success', 'failed', 'refunded'],
       default: 'created',
       index: true,
     },
     paymentMethod: {
       type: String,
-      default: '',
+      default: 'Razorpay',
+    },
+    verifiedAt: {
+      type: Date,
+    },
+    verifiedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
     },
     errorReason: {
       type: String,

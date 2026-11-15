@@ -130,7 +130,7 @@ async function runTests() {
     assert(verifyRes.data.order.projectStatus === 'confirmed', 'Project status marked as confirmed');
 
     // 8. Admin Dashboard Analytics & Recharts Data
-    console.log('\n[8/8] Testing /api/admin/dashboard-stats (Recharts Analytics) ...');
+    console.log('\n[8/10] Testing /api/admin/dashboard-stats (Recharts Analytics) ...');
     const statsRes = await fetch(`${baseUrl}/admin/dashboard-stats`, {
       headers: { Authorization: `Bearer ${adminToken}` },
     }).then((r) => r.json());
@@ -140,6 +140,55 @@ async function runTests() {
     assert(statsRes.stats.totalRevenue > 0, `Total Revenue tracked: ₹${statsRes.stats.totalRevenue}`);
     assert(statsRes.charts.monthlyRevenue?.length === 6, 'Monthly revenue data points generated for Recharts');
     assert(statsRes.charts.statusBreakdown?.length > 0, 'Status breakdown generated for Recharts pie chart');
+
+    // 9. QR Configuration API
+    console.log('\n[9/10] Testing /api/payments/qr-config (UPI QR Config) ...');
+    const qrConfigRes = await fetch(`${baseUrl}/payments/qr-config`).then((r) => r.json());
+    assert(qrConfigRes.success === true && qrConfigRes.data?.upiId, `UPI QR Config returned valid UPI ID: ${qrConfigRes.data?.upiId}`);
+
+    // 10. UPI QR Code Booking & Payment Submission
+    console.log('\n[10/10] Testing /api/payments/submit-qr-payment (UPI QR Payment & UTR Verification) ...');
+    // Create a new booking for QR payment test
+    const qrBookingRes = await fetch(`${baseUrl}/bookings/initiate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${customerToken}`,
+      },
+      body: JSON.stringify({
+        fullName: 'Aarav Sharma',
+        email: 'aarav@techventure.in',
+        phone: '+91 98111 22334',
+        serviceId: testServiceId,
+        packageId: testPackageId,
+        projectTitle: 'QR Code Payment Integration Test Project',
+        description: 'Verifying instant UPI QR code payment and UTR submission workflow.',
+        scheduledDate: dateStr,
+        timeSlot: 'Afternoon Slot (02:00 PM - 05:00 PM)',
+      }),
+    }).then((r) => r.json());
+
+    const qrOrderId = qrBookingRes.data.orderId;
+    const testUtr = `5123${Date.now().toString().slice(-8)}`;
+
+    const qrPaymentRes = await fetch(`${baseUrl}/payments/submit-qr-payment`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${customerToken}`,
+      },
+      body: JSON.stringify({
+        orderId: qrOrderId,
+        upiTransactionId: testUtr,
+        paymentType: 'advance',
+      }),
+    }).then((r) => r.json());
+
+    assert(qrPaymentRes.success === true, 'UPI QR payment processed and booking confirmed');
+    assert(qrPaymentRes.data.payment.paymentMethod === 'UPI QR Code', 'Payment record has paymentMethod: UPI QR Code');
+    assert(qrPaymentRes.data.payment.upiTransactionId === testUtr, `Payment record correctly linked to UTR: ${testUtr}`);
+    assert(qrPaymentRes.data.order.paymentStatus === 'advance_paid', 'Order paymentStatus updated to advance_paid');
+    assert(qrPaymentRes.data.order.projectStatus === 'confirmed', 'Project status updated to confirmed');
 
     console.log('\n======================================================');
     console.log('  ALL INTEGRATION TESTS PASSED WITH ZERO DEFECTS! 🚀');

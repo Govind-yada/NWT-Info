@@ -5,6 +5,7 @@ import CalendarEvent from '../models/CalendarEvent.js';
 import { verifyRazorpaySignature, verifyWebhookSignature, createRazorpayOrder, getRazorpayKeyId } from '../config/razorpay.js';
 import { generatePaymentReference } from '../utils/helpers.js';
 import { syncToGoogleCalendar } from '../config/googleCalendar.js';
+import { uploadFile } from '../config/cloudinary.js';
 
 // @desc    Verify Razorpay payment signature & confirm booking / order
 // @route   POST /api/payments/verify
@@ -142,6 +143,182 @@ export const verifyPayment = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: 'Payment verified successfully and booking confirmed!',
+      data: {
+        payment,
+        order,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get UPI QR Code payment configuration
+// @route   GET /api/payments/qr-config
+// @access  Public
+export const getQrConfig = async (req, res, next) => {
+  try {
+    const upiId = process.env.COMPANY_UPI_ID || 'nwtinfo@okaxis';
+    const payeeName = process.env.COMPANY_PAYEE_NAME || 'NWT Info (Next World Tech)';
+    res.status(200).json({
+      success: true,
+      data: {
+        upiId,
+        payeeName,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Submit UPI QR Code payment with UTR and optional screenshot proof
+// @route   POST /api/payments/submit-qr-payment
+// @access  Public (Guest or Authenticated)
+export const submitQrPayment = async (req, res, next) => {
+  try {
+    const { orderId, upiTransactionId, paymentType = 'advance' } = req.body;
+
+    if (!orderId || !upiTransactionId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Order ID and UPI UTR / Transaction Reference are required.',
+      });
+    }
+
+    const cleanUtr = String(upiTransactionId).trim();
+    if (cleanUtr.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter a valid 12-digit UPI Transaction Reference / UTR number.',
+      });
+    }
+
+    // Check duplicate successful UTR
+    const duplicatePayment = await Payment.findOne({
+      upiTransactionId: cleanUtr,
+      status: 'success',
+    });
+
+    if (duplicatePayment) {
+      return res.status(400).json({
+        success: false,
+        message: 'This UPI Transaction Reference (UTR) has already been processed for another payment.',
+      });
+    }
+
+    const order = await Order.findById(orderId).populate('serviceId packageId userId bookingId');
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Associated project order not found.' });
+    }
+
+    // Handle optional screenshot upload
+    let screenshotUrl = '';
+    let screenshotPublicId = '';
+    if (req.file) {
+      try {
+        const uploadResult = await uploadFile(req.file.path, 'nwt-payments');
+        screenshotUrl = uploadResult.url;
+        screenshotPublicId = uploadResult.publicId;
+      } catch (uploadErr) {
+        console.warn('[Payment Screenshot Upload] Non-blocking warning:', uploadErr.message);
+      }
+    }
+
+    let amountPaid = 0;
+    const companyUpiId = process.env.COMPANY_UPI_ID || 'nwtinfo@okaxis';
+
+    if (paymentType === 'advance') {
+      if (order.advancePaid) {
+        return res.status(400).json({
+          success: false,
+          message: 'Advance payment for this project has already been marked as paid.',
+        });
+      }
+
+      amountPaid = order.advanceAmount;
+      order.advancePaid = true;
+      order.paymentStatus = 'advance_paid';
+      order.projectStatus = 'confirmed';
+      order.timeline.push({
+        status: '30% Advance Paid (UPI QR Code)',
+        note: `Advance payment of ₹${amountPaid.toLocaleString('en-IN')} received via UPI QR Code. (UTR / Ref: ${cleanUtr}). Project confirmed!`,
+        timestamp: new Date(),
+      });
+
+      // Update Booking status
+      if (order.bookingId) {
+        await Booking.findByIdAndUpdate(order.bookingId._id, {
+          status: 'confirmed',
+        });
+      }
+
+      // Synchronize Calendar Event
+      const calendarEvent = await CalendarEvent.create({
+        title: `Project: ${order.projectTitle} (${order.serviceId?.name || 'Digital Service'})`,
+        description: `Customer: ${order.userId?.name} (${order.userId?.email}). Order #${order.orderNumber}. Paid via UPI QR (UTR: ${cleanUtr})`,
+        date: order.scheduledDate,
+        startTime: '10:00 AM',
+        endTime: '06:00 PM',
+        type: 'booking',
+        bookingId: order.bookingId?._id,
+        orderId: order._id,
+        userId: order.userId?._id,
+      });
+
+      try {
+        const googleEventId = await syncToGoogleCalendar({
+          title: calendarEvent.title,
+          description: calendarEvent.description,
+          date: order.scheduledDate,
+        });
+        if (googleEventId) {
+          calendarEvent.googleEventId = googleEventId;
+          await calendarEvent.save();
+        }
+      } catch (gErr) {
+        console.warn('[Calendar Sync] Non-blocking Google Calendar sync error:', gErr.message);
+      }
+    } else if (paymentType === 'remaining') {
+      if (order.remainingPaid) {
+        return res.status(400).json({
+          success: false,
+          message: 'Remaining balance for this project has already been paid in full.',
+        });
+      }
+
+      amountPaid = order.remainingAmount;
+      order.remainingPaid = true;
+      order.paymentStatus = 'fully_paid';
+      order.timeline.push({
+        status: 'Remaining 70% Balance Paid (UPI QR Code)',
+        note: `Balance payment of ₹${amountPaid.toLocaleString('en-IN')} received via UPI QR Code. (UTR / Ref: ${cleanUtr}). Order fully settled.`,
+        timestamp: new Date(),
+      });
+    }
+
+    await order.save();
+
+    // Create Payment record
+    const payment = await Payment.create({
+      paymentReference: generatePaymentReference(),
+      orderId: order._id,
+      userId: order.userId._id,
+      type: paymentType,
+      amount: amountPaid,
+      currency: 'INR',
+      status: 'success',
+      paymentMethod: 'UPI QR Code',
+      upiId: companyUpiId,
+      upiTransactionId: cleanUtr,
+      screenshotUrl,
+      screenshotPublicId,
+      verifiedAt: new Date(),
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'UPI QR Payment verified successfully and booking confirmed!',
       data: {
         payment,
         order,

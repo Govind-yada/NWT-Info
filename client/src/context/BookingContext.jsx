@@ -35,15 +35,37 @@ export const BookingProvider = ({ children }) => {
     scheduledDate: '',
     timeSlot: 'Morning Slot (10:00 AM - 01:00 PM)',
 
-    // Step 5: Pricing
+    // Step 5: Pricing & Payment Method
     totalAmount: 0,
     advanceAmount: 0,
     remainingAmount: 0,
+    paymentMethod: 'razorpay', // 'razorpay' | 'qr'
 
     // Step 6: Confirmation
     confirmedOrder: null,
     confirmedBooking: null,
+    confirmedPayment: null,
   });
+
+  const [qrConfig, setQrConfig] = useState({
+    upiId: 'nwtinfo@okaxis',
+    payeeName: 'NWT Info (Next World Tech)',
+  });
+
+  // Fetch UPI QR payment configuration from server
+  React.useEffect(() => {
+    const fetchQrConfig = async () => {
+      try {
+        const res = await api.get('/payments/qr-config');
+        if (res.data?.success && res.data.data) {
+          setQrConfig(res.data.data);
+        }
+      } catch (err) {
+        // Fallback silently to defaults
+      }
+    };
+    fetchQrConfig();
+  }, []);
 
   const openBookingModal = (service = null, pkg = null) => {
     if (service && pkg) {
@@ -120,8 +142,10 @@ export const BookingProvider = ({ children }) => {
       totalAmount: 0,
       advanceAmount: 0,
       remainingAmount: 0,
+      paymentMethod: 'razorpay',
       confirmedOrder: null,
       confirmedBooking: null,
+      confirmedPayment: null,
     });
     setCurrentStep(1);
     setError(null);
@@ -254,6 +278,86 @@ export const BookingProvider = ({ children }) => {
     }
   };
 
+  /**
+   * Submits booking data to backend, initiates order,
+   * and verifies UPI QR payment with UTR and optional screenshot proof.
+   */
+  const submitBookingAndPayQr = async ({ upiTransactionId, screenshotFile }) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      if (!upiTransactionId || upiTransactionId.trim().length < 6) {
+        throw new Error('Please enter a valid UPI Transaction Reference / UTR (at least 6 characters).');
+      }
+
+      // Step 1: Initiate booking order
+      const formData = new FormData();
+      formData.append('fullName', bookingData.fullName);
+      formData.append('email', bookingData.email);
+      formData.append('phone', bookingData.phone);
+      formData.append('serviceId', bookingData.serviceId);
+      formData.append('packageId', bookingData.packageId);
+      formData.append('projectTitle', bookingData.projectTitle);
+      formData.append('proposedDomain', bookingData.proposedDomain);
+      formData.append('description', bookingData.description);
+      formData.append('scheduledDate', bookingData.scheduledDate);
+      formData.append('timeSlot', bookingData.timeSlot);
+      formData.append('requiredFeatures', JSON.stringify(bookingData.requiredFeatures));
+      formData.append(
+        'referenceWebsites',
+        JSON.stringify(
+          bookingData.referenceWebsites ? bookingData.referenceWebsites.split('\n').filter(Boolean) : []
+        )
+      );
+
+      if (bookingData.attachments && bookingData.attachments.length > 0) {
+        for (let i = 0; i < bookingData.attachments.length; i++) {
+          formData.append('attachments', bookingData.attachments[i]);
+        }
+      }
+
+      const initRes = await api.post('/bookings/initiate', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      if (!initRes.data.success) {
+        throw new Error(initRes.data.message || 'Failed to initiate booking');
+      }
+
+      const { orderId } = initRes.data.data;
+
+      // Step 2: Submit QR Payment
+      const qrFormData = new FormData();
+      qrFormData.append('orderId', orderId);
+      qrFormData.append('upiTransactionId', upiTransactionId.trim());
+      qrFormData.append('paymentType', 'advance');
+      if (screenshotFile) {
+        qrFormData.append('screenshot', screenshotFile);
+      }
+
+      const qrRes = await api.post('/payments/submit-qr-payment', qrFormData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      if (qrRes.data.success) {
+        setBookingData((prev) => ({
+          ...prev,
+          confirmedOrder: qrRes.data.data.order,
+          confirmedPayment: qrRes.data.data.payment,
+        }));
+        setCurrentStep(6);
+      } else {
+        throw new Error(qrRes.data.message || 'Payment submission failed.');
+      }
+    } catch (err) {
+      console.error('[QR Payment Error]:', err);
+      setError(err.response?.data?.message || err.message || 'An error occurred during QR payment submission');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <BookingContext.Provider
       value={{
@@ -268,6 +372,8 @@ export const BookingProvider = ({ children }) => {
         prevStep,
         resetBooking,
         submitBookingAndPay,
+        submitBookingAndPayQr,
+        qrConfig,
         loading,
         error,
         setError,

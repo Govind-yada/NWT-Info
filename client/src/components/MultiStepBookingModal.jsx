@@ -2,12 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useBooking } from '../context/BookingContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { QRCodeSVG } from 'qrcode.react';
 import api from '../services/api';
 import {
   X,
   CheckCircle2,
   Calendar,
   CreditCard,
+  QrCode,
+  Copy,
+  Check,
   Upload,
   ArrowRight,
   ArrowLeft,
@@ -17,6 +21,7 @@ import {
   Sparkles,
   ShieldCheck,
   Trash2,
+  Image as ImageIcon,
 } from 'lucide-react';
 
 export const MultiStepBookingModal = () => {
@@ -29,6 +34,8 @@ export const MultiStepBookingModal = () => {
     bookingData,
     updateBookingData,
     submitBookingAndPay,
+    submitBookingAndPayQr,
+    qrConfig,
     loading,
     error,
     setError,
@@ -43,6 +50,37 @@ export const MultiStepBookingModal = () => {
   const [checkingAvailability, setCheckingAvailability] = useState(false);
   const [slotAvailability, setSlotAvailability] = useState(null);
   const [featureInput, setFeatureInput] = useState('');
+
+  // Payment Method & QR Code State
+  const [paymentMethod, setPaymentMethod] = useState('razorpay'); // 'razorpay' | 'qr'
+  const [upiUtr, setUpiUtr] = useState('');
+  const [screenshotFile, setScreenshotFile] = useState(null);
+  const [screenshotPreview, setScreenshotPreview] = useState(null);
+  const [copiedUpi, setCopiedUpi] = useState(false);
+
+  const handleCopyUpi = () => {
+    const idToCopy = qrConfig?.upiId || 'nwtinfo@okaxis';
+    navigator.clipboard.writeText(idToCopy);
+    setCopiedUpi(true);
+    setTimeout(() => setCopiedUpi(false), 2000);
+  };
+
+  const handleScreenshotChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setScreenshotFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setScreenshotPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeScreenshot = () => {
+    setScreenshotFile(null);
+    setScreenshotPreview(null);
+  };
 
   // Prefill user details if logged in
   useEffect(() => {
@@ -580,7 +618,7 @@ export const MultiStepBookingModal = () => {
             </div>
           )}
 
-          {/* STEP 5: Payment Summary (30% Advance Calculation) */}
+          {/* STEP 5: Payment Summary & Method Selection (30% Advance Calculation) */}
           {currentStep === 5 && (
             <div className="space-y-4">
               <h4 className="text-sm font-semibold text-slate-200">Investment Breakdown & 30% Advance</h4>
@@ -633,10 +671,161 @@ export const MultiStepBookingModal = () => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 text-[11px] text-slate-400">
-                <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>100% Secure Razorpay checkout with instant digital invoice.</span>
+              {/* Payment Method Selector (Keep Both Razorpay and QR Code) */}
+              <div className="space-y-2 pt-1">
+                <span className="block text-xs font-semibold text-slate-300">Choose Payment Method:</span>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Razorpay Option */}
+                  <div
+                    onClick={() => setPaymentMethod('razorpay')}
+                    className={`cursor-pointer p-3.5 rounded-2xl border transition relative flex items-start gap-3 ${
+                      paymentMethod === 'razorpay'
+                        ? 'bg-blue-600/15 border-blue-500 shadow-glow-sm'
+                        : 'bg-navy-950/70 border-slate-800 hover:border-slate-700'
+                    }`}
+                  >
+                    <div className={`p-2 rounded-xl shrink-0 ${paymentMethod === 'razorpay' ? 'bg-blue-500 text-white' : 'bg-slate-800 text-slate-400'}`}>
+                      <CreditCard className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-white">Razorpay Gateway</span>
+                        {paymentMethod === 'razorpay' && <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0" />}
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-0.5">Cards, Net Banking, Razorpay UPI & Wallets</p>
+                    </div>
+                  </div>
+
+                  {/* UPI QR Code Option */}
+                  <div
+                    onClick={() => setPaymentMethod('qr')}
+                    className={`cursor-pointer p-3.5 rounded-2xl border transition relative flex items-start gap-3 ${
+                      paymentMethod === 'qr'
+                        ? 'bg-purple-600/15 border-purple-500 shadow-glow-sm'
+                        : 'bg-navy-950/70 border-slate-800 hover:border-slate-700'
+                    }`}
+                  >
+                    <div className={`p-2 rounded-xl shrink-0 ${paymentMethod === 'qr' ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-400'}`}>
+                      <QrCode className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-white">Scan UPI QR Code</span>
+                        {paymentMethod === 'qr' && <CheckCircle2 className="w-4 h-4 text-purple-400 shrink-0" />}
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-0.5">GPay, PhonePe, Paytm, BHIM (Zero Fee)</p>
+                    </div>
+                  </div>
+                </div>
               </div>
+
+              {/* Conditional Payment Details */}
+              {paymentMethod === 'razorpay' ? (
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-[11px] text-slate-300">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>100% Secure Razorpay checkout with instant digital invoice.</span>
+                </div>
+              ) : (
+                /* UPI QR Code Container */
+                <div className="space-y-3 p-4 rounded-2xl bg-navy-950 border border-purple-500/30">
+                  <div className="flex flex-col sm:flex-row items-center gap-4">
+                    {/* Rendered SVG QR Code */}
+                    <div className="p-3 bg-white rounded-2xl shadow-md border-2 border-slate-700 shrink-0 flex items-center justify-center">
+                      <QRCodeSVG
+                        value={`upi://pay?pa=${encodeURIComponent(qrConfig?.upiId || 'nwtinfo@okaxis')}&pn=${encodeURIComponent(qrConfig?.payeeName || 'NWT Info')}&am=${bookingData.advanceAmount}&cu=INR&tn=${encodeURIComponent('30% Advance ' + (bookingData.projectTitle || 'NWT Project'))}`}
+                        size={140}
+                        level="H"
+                        includeMargin={false}
+                      />
+                    </div>
+
+                    <div className="flex-1 space-y-2 text-xs text-left w-full">
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase font-semibold block">Payee Beneficiary</span>
+                        <span className="font-bold text-white text-sm">{qrConfig?.payeeName || 'NWT Info (Next World Tech)'}</span>
+                      </div>
+
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase font-semibold block">Company UPI ID</span>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <code className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-xs font-mono font-semibold text-brand-electric">
+                            {qrConfig?.upiId || 'nwtinfo@okaxis'}
+                          </code>
+                          <button
+                            type="button"
+                            onClick={handleCopyUpi}
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-medium transition"
+                          >
+                            {copiedUpi ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                            {copiedUpi ? 'Copied' : 'Copy'}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="pt-1">
+                        <span className="text-[10px] text-slate-400 uppercase font-semibold block">Payable Advance (30%)</span>
+                        <span className="text-base font-extrabold text-emerald-400">
+                          ₹{bookingData.advanceAmount.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* UTR Input Form */}
+                  <div className="pt-2 border-t border-slate-800 space-y-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-200 mb-1">
+                        12-Digit UPI Transaction ID / UTR <span className="text-rose-400">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={upiUtr}
+                        onChange={(e) => setUpiUtr(e.target.value.replace(/[^a-zA-Z0-9]/g, ''))}
+                        placeholder="e.g. 512345678901 (from GPay / PhonePe / Paytm)"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 font-mono tracking-wider"
+                        required
+                      />
+                      <span className="text-[10px] text-slate-400 mt-1 block">
+                        Open your UPI app payment receipt, locate the 12-digit UTR/Ref No, and paste it here.
+                      </span>
+                    </div>
+
+                    {/* Optional Screenshot Upload */}
+                    <div>
+                      <label className="block text-xs font-medium text-slate-300 mb-1">
+                        Payment Screenshot Proof <span className="text-slate-500 font-normal">(Optional)</span>
+                      </label>
+                      {screenshotPreview ? (
+                        <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs">
+                          <div className="flex items-center gap-2 truncate">
+                            <img src={screenshotPreview} alt="Proof" className="w-10 h-10 object-cover rounded-lg border border-slate-700 shrink-0" />
+                            <span className="text-slate-200 truncate">{screenshotFile?.name}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={removeScreenshot}
+                            className="p-1 text-slate-400 hover:text-rose-400"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <label className="relative border border-dashed border-slate-700 hover:border-purple-500/50 rounded-xl p-3 text-center bg-slate-900/40 transition cursor-pointer flex items-center justify-center gap-2">
+                          <Upload className="w-4 h-4 text-purple-400" />
+                          <span className="text-xs text-slate-300">Attach payment screenshot proof</span>
+                          <input
+                            type="file"
+                            accept="image/*,.pdf"
+                            onChange={handleScreenshotChange}
+                            className="sr-only"
+                          />
+                        </label>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -666,6 +855,28 @@ export const MultiStepBookingModal = () => {
                     <span className="text-slate-400">Project:</span>
                     <span className="text-white font-medium">{bookingData.confirmedOrder.projectTitle}</span>
                   </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Payment Method:</span>
+                    <span className="font-semibold text-purple-400">
+                      {bookingData.confirmedPayment?.paymentMethod || 'Razorpay Gateway'}
+                    </span>
+                  </div>
+                  {bookingData.confirmedPayment?.upiTransactionId && (
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">UPI Ref / UTR:</span>
+                      <span className="font-mono text-slate-300">
+                        {bookingData.confirmedPayment.upiTransactionId}
+                      </span>
+                    </div>
+                  )}
+                  {bookingData.confirmedPayment?.razorpayPaymentId && (
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Razorpay ID:</span>
+                      <span className="font-mono text-slate-300">
+                        {bookingData.confirmedPayment.razorpayPaymentId}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex justify-between">
                     <span className="text-slate-400">Advance Paid:</span>
                     <span className="text-emerald-400 font-bold">
@@ -739,7 +950,7 @@ export const MultiStepBookingModal = () => {
               >
                 Next Step <ArrowRight className="w-3.5 h-3.5" />
               </button>
-            ) : (
+            ) : paymentMethod === 'razorpay' ? (
               <button
                 type="button"
                 onClick={submitBookingAndPay}
@@ -754,7 +965,26 @@ export const MultiStepBookingModal = () => {
                 ) : (
                   <>
                     <CreditCard className="w-4 h-4" />
-                    Pay 30% Advance (₹{bookingData.advanceAmount.toLocaleString('en-IN')})
+                    Pay 30% Advance with Razorpay (₹{bookingData.advanceAmount.toLocaleString('en-IN')})
+                  </>
+                )}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => submitBookingAndPayQr({ upiTransactionId: upiUtr, screenshotFile })}
+                disabled={loading || !upiUtr.trim() || upiUtr.trim().length < 6}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-bold hover:shadow-glow transition disabled:opacity-50"
+              >
+                {loading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Verifying UPI Payment...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-4 h-4" />
+                    Confirm UPI Booking (₹{bookingData.advanceAmount.toLocaleString('en-IN')})
                   </>
                 )}
               </button>

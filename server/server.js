@@ -127,12 +127,17 @@ app.use(notFound);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () => {
-  console.log(`\n======================================================`);
-  console.log(`  NWT Info (Next World Tech) API Server Running`);
-  console.log(`  Port: ${PORT} | Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`  Health Check: http://localhost:${PORT}/api/health`);
-  console.log(`======================================================\n`);
-});
+let server;
+
+const isTest = process.env.NODE_ENV === 'test' || process.env.npm_lifecycle_event === 'test' || process.argv[1]?.includes('test');
+if (!isTest) {
+  server = app.listen(PORT, () => {
+    console.log(`\n======================================================`);
+    console.log(`  NWT Info (Next World Tech) API Server Running`);
+    console.log(`  Port: ${PORT} | Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`  Health Check: http://localhost:${PORT}/api/health`);
+    console.log(`======================================================\n`);
+  });
+}
 
 export default app;

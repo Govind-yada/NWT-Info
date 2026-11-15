@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { QRCodeSVG } from 'qrcode.react';
 import api from '../../services/api';
 import { ProjectTimeline } from '../../components/ProjectTimeline';
 import {
   ArrowLeft,
   Calendar,
   CreditCard,
+  QrCode,
+  Copy,
+  Check,
   FileText,
   Globe,
   ExternalLink,
@@ -13,6 +17,9 @@ import {
   CheckCircle2,
   AlertCircle,
   Download,
+  Upload,
+  X,
+  Trash2,
 } from 'lucide-react';
 
 export const ProjectDetail = () => {
@@ -22,6 +29,18 @@ export const ProjectDetail = () => {
   const [payingRemaining, setPayingRemaining] = useState(false);
   const [error, setError] = useState(null);
   const [paymentSuccess, setPaymentSuccess] = useState(null);
+
+  // Remaining Balance Payment Modal & QR Code State
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('razorpay');
+  const [upiUtr, setUpiUtr] = useState('');
+  const [screenshotFile, setScreenshotFile] = useState(null);
+  const [screenshotPreview, setScreenshotPreview] = useState(null);
+  const [copiedUpi, setCopiedUpi] = useState(false);
+  const [qrConfig, setQrConfig] = useState({
+    upiId: 'nwtinfo@okaxis',
+    payeeName: 'NWT Info (Next World Tech)',
+  });
 
   const fetchOrder = async () => {
     try {
@@ -38,7 +57,82 @@ export const ProjectDetail = () => {
 
   useEffect(() => {
     fetchOrder();
+
+    const fetchQrConfig = async () => {
+      try {
+        const res = await api.get('/payments/qr-config');
+        if (res.data?.success && res.data.data) {
+          setQrConfig(res.data.data);
+        }
+      } catch (e) {
+        // Fallback to default
+      }
+    };
+    fetchQrConfig();
   }, [id]);
+
+  const handleCopyUpi = () => {
+    navigator.clipboard.writeText(qrConfig?.upiId || 'nwtinfo@okaxis');
+    setCopiedUpi(true);
+    setTimeout(() => setCopiedUpi(false), 2000);
+  };
+
+  const handleScreenshotChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setScreenshotFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setScreenshotPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeScreenshot = () => {
+    setScreenshotFile(null);
+    setScreenshotPreview(null);
+  };
+
+  // Handle Remaining Balance Settlement via QR Code
+  const handlePayRemainingQr = async () => {
+    if (!upiUtr.trim() || upiUtr.trim().length < 6) {
+      setError('Please enter a valid 12-digit UPI Transaction Reference / UTR.');
+      return;
+    }
+
+    setPayingRemaining(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('orderId', order._id);
+      formData.append('upiTransactionId', upiUtr.trim());
+      formData.append('paymentType', 'remaining');
+      if (screenshotFile) {
+        formData.append('screenshot', screenshotFile);
+      }
+
+      const res = await api.post('/payments/submit-qr-payment', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      if (res.data.success) {
+        setPaymentSuccess('Remaining 70% balance verified successfully via UPI QR Code! Project is fully settled.');
+        setShowPaymentModal(false);
+        setUpiUtr('');
+        setScreenshotFile(null);
+        setScreenshotPreview(null);
+        await fetchOrder();
+      } else {
+        setError(res.data.message || 'Payment submission failed');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || 'Error processing UPI payment');
+    } finally {
+      setPayingRemaining(false);
+    }
+  };
 
   // Handle Remaining Balance Settlement via Razorpay
   const handlePayRemaining = async () => {
@@ -85,6 +179,7 @@ export const ProjectDetail = () => {
 
               if (verifyRes.data.success) {
                 setPaymentSuccess('Remaining balance payment verified successfully! Order is fully settled.');
+                setShowPaymentModal(false);
                 await fetchOrder();
               } else {
                 setError(verifyRes.data.message || 'Payment verification failed');
@@ -116,6 +211,7 @@ export const ProjectDetail = () => {
 
         if (verifyRes.data.success) {
           setPaymentSuccess('Remaining balance payment verified successfully! Order is fully settled.');
+          setShowPaymentModal(false);
           await fetchOrder();
         }
         setPayingRemaining(false);
@@ -198,11 +294,10 @@ export const ProjectDetail = () => {
               </span>
               <button
                 type="button"
-                onClick={handlePayRemaining}
-                disabled={payingRemaining}
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold shadow-glow hover:opacity-95 transition disabled:opacity-50"
+                onClick={() => setShowPaymentModal(true)}
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold shadow-glow hover:opacity-95 transition"
               >
-                {payingRemaining ? 'Connecting Razorpay...' : 'Pay Remaining Balance'}
+                Settle 70% Balance (Razorpay / QR)
               </button>
             </div>
           )}
@@ -370,6 +465,187 @@ export const ProjectDetail = () => {
         </div>
 
       </div>
+
+      {/* Settle Remaining Balance Modal */}
+      {showPaymentModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/80 backdrop-blur-md animate-fadeIn">
+          <div className="relative w-full max-w-lg bg-navy-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden p-6 space-y-4">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div>
+                <h3 className="text-base font-bold text-white">Settle 70% Milestone Balance</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Order #{order.orderNumber} • {order.projectTitle}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowPaymentModal(false)}
+                className="p-1 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Amount Summary */}
+            <div className="p-3.5 rounded-2xl bg-navy-950 border border-slate-800 flex justify-between items-center text-xs">
+              <span className="text-slate-400">Payable Remaining Balance:</span>
+              <span className="text-lg font-extrabold text-emerald-400">
+                ₹{order.remainingAmount.toLocaleString('en-IN')}
+              </span>
+            </div>
+
+            {/* Method Tabs */}
+            <div className="space-y-2">
+              <span className="block text-xs font-semibold text-slate-300">Choose Settlement Method:</span>
+              <div className="grid grid-cols-2 gap-3">
+                <div
+                  onClick={() => setPaymentMethod('razorpay')}
+                  className={`cursor-pointer p-3 rounded-2xl border transition flex items-center gap-2.5 ${
+                    paymentMethod === 'razorpay'
+                      ? 'bg-blue-600/15 border-blue-500 shadow-glow-sm'
+                      : 'bg-navy-950/70 border-slate-800 hover:border-slate-700'
+                  }`}
+                >
+                  <CreditCard className={`w-4 h-4 shrink-0 ${paymentMethod === 'razorpay' ? 'text-blue-400' : 'text-slate-400'}`} />
+                  <div className="min-w-0">
+                    <span className="text-xs font-bold text-white block">Razorpay</span>
+                    <span className="text-[10px] text-slate-400">Cards / Netbanking</span>
+                  </div>
+                </div>
+
+                <div
+                  onClick={() => setPaymentMethod('qr')}
+                  className={`cursor-pointer p-3 rounded-2xl border transition flex items-center gap-2.5 ${
+                    paymentMethod === 'qr'
+                      ? 'bg-purple-600/15 border-purple-500 shadow-glow-sm'
+                      : 'bg-navy-950/70 border-slate-800 hover:border-slate-700'
+                  }`}
+                >
+                  <QrCode className={`w-4 h-4 shrink-0 ${paymentMethod === 'qr' ? 'text-purple-400' : 'text-slate-400'}`} />
+                  <div className="min-w-0">
+                    <span className="text-xs font-bold text-white block">UPI QR Code</span>
+                    <span className="text-[10px] text-slate-400">GPay / PhonePe / Paytm</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Dynamic Options Body */}
+            {paymentMethod === 'razorpay' ? (
+              <div className="space-y-4 py-2">
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs text-slate-300">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>Opens secure Razorpay checkout modal with instant verification.</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handlePayRemaining}
+                  disabled={payingRemaining}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold shadow-glow hover:opacity-95 transition disabled:opacity-50"
+                >
+                  {payingRemaining ? 'Connecting Razorpay...' : `Pay ₹${order.remainingAmount.toLocaleString('en-IN')} via Razorpay`}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3 p-3.5 rounded-2xl bg-navy-950 border border-purple-500/30">
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                  <div className="p-2.5 bg-white rounded-2xl shadow-md border-2 border-slate-700 shrink-0 flex items-center justify-center">
+                    <QRCodeSVG
+                      value={`upi://pay?pa=${encodeURIComponent(qrConfig?.upiId || 'nwtinfo@okaxis')}&pn=${encodeURIComponent(qrConfig?.payeeName || 'NWT Info')}&am=${order.remainingAmount}&cu=INR&tn=${encodeURIComponent('70% Balance ' + order.orderNumber)}`}
+                      size={130}
+                      level="H"
+                    />
+                  </div>
+
+                  <div className="flex-1 space-y-2 text-xs text-left w-full">
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase font-semibold block">Company UPI ID</span>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <code className="px-2 py-0.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-mono font-semibold text-brand-electric">
+                          {qrConfig?.upiId || 'nwtinfo@okaxis'}
+                        </code>
+                        <button
+                          type="button"
+                          onClick={handleCopyUpi}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-medium transition"
+                        >
+                          {copiedUpi ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                          {copiedUpi ? 'Copied' : 'Copy'}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase font-semibold block">Payable Balance</span>
+                      <span className="text-base font-extrabold text-emerald-400">
+                        ₹{order.remainingAmount.toLocaleString('en-IN')}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-800 space-y-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-200 mb-1">
+                      12-Digit UPI UTR / Transaction ID <span className="text-rose-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={upiUtr}
+                      onChange={(e) => setUpiUtr(e.target.value.replace(/[^a-zA-Z0-9]/g, ''))}
+                      placeholder="e.g. 512345678901 (from payment receipt)"
+                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 font-mono tracking-wider"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1">
+                      Payment Screenshot Proof <span className="text-slate-500 font-normal">(Optional)</span>
+                    </label>
+                    {screenshotPreview ? (
+                      <div className="flex items-center justify-between p-2 rounded-xl bg-slate-900 border border-slate-800 text-xs">
+                        <div className="flex items-center gap-2 truncate">
+                          <img src={screenshotPreview} alt="Proof" className="w-9 h-9 object-cover rounded-lg border border-slate-700 shrink-0" />
+                          <span className="text-slate-200 truncate">{screenshotFile?.name}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={removeScreenshot}
+                          className="p-1 text-slate-400 hover:text-rose-400"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="relative border border-dashed border-slate-700 hover:border-purple-500/50 rounded-xl p-2.5 text-center bg-slate-900/40 transition cursor-pointer flex items-center justify-center gap-2">
+                        <Upload className="w-3.5 h-3.5 text-purple-400" />
+                        <span className="text-xs text-slate-300">Attach payment receipt screenshot</span>
+                        <input
+                          type="file"
+                          accept="image/*,.pdf"
+                          onChange={handleScreenshotChange}
+                          className="sr-only"
+                        />
+                      </label>
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handlePayRemainingQr}
+                    disabled={payingRemaining || !upiUtr.trim() || upiUtr.trim().length < 6}
+                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-bold shadow-glow hover:opacity-95 transition disabled:opacity-50"
+                  >
+                    {payingRemaining ? 'Verifying UPI Payment...' : `Confirm UPI Payment (₹${order.remainingAmount.toLocaleString('en-IN')})`}
+                  </button>
+                </div>
+              </div>
+            )}
+
+          </div>
+        </div>
+      )}
 
     </div>
   );

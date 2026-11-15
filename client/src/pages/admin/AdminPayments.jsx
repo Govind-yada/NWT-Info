@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import {
   CreditCard,
+  QrCode,
   DollarSign,
   CheckCircle2,
   AlertCircle,
@@ -9,6 +10,8 @@ import {
   Search,
   ArrowUpRight,
   ShieldCheck,
+  Image as ImageIcon,
+  X,
 } from 'lucide-react';
 
 export const AdminPayments = () => {
@@ -17,6 +20,7 @@ export const AdminPayments = () => {
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [activeProof, setActiveProof] = useState(null);
 
   const fetchPayments = async () => {
     try {
@@ -119,7 +123,7 @@ export const AdminPayments = () => {
                 <th className="px-5 py-4">Project Order</th>
                 <th className="px-5 py-4">Payment Type</th>
                 <th className="px-5 py-4">Amount</th>
-                <th className="px-5 py-4">Razorpay Order & Payment ID</th>
+                <th className="px-5 py-4">Method & Transaction IDs</th>
                 <th className="px-5 py-4">Timestamp</th>
                 <th className="px-5 py-4">Status</th>
               </tr>
@@ -154,9 +158,34 @@ export const AdminPayments = () => {
                     <td className="px-5 py-4 font-extrabold text-white">
                       ₹{p.amount.toLocaleString('en-IN')}
                     </td>
-                    <td className="px-5 py-4 font-mono text-[10px] text-slate-400">
-                      <div>{p.razorpayOrderId}</div>
-                      <div className="text-slate-500">{p.razorpayPaymentId || 'pending'}</div>
+                    <td className="px-5 py-4 text-[10px]">
+                      {p.paymentMethod === 'UPI QR Code' ? (
+                        <div className="space-y-1">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-purple-500/15 border border-purple-500/30 font-semibold text-purple-300">
+                            <QrCode className="w-3 h-3" /> UPI QR Code
+                          </span>
+                          <div className="font-mono text-slate-300">
+                            UTR: {p.upiTransactionId || 'N/A'}
+                          </div>
+                          {p.screenshotUrl && (
+                            <button
+                              type="button"
+                              onClick={() => setActiveProof(p.screenshotUrl)}
+                              className="inline-flex items-center gap-1 text-[10px] text-purple-400 hover:text-purple-300 underline"
+                            >
+                              <ImageIcon className="w-3 h-3" /> View Proof Receipt
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="space-y-1 font-mono text-slate-400">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-500/15 border border-blue-500/30 font-semibold text-blue-300">
+                            <CreditCard className="w-3 h-3" /> Razorpay
+                          </span>
+                          <div>Ord: {p.razorpayOrderId || 'N/A'}</div>
+                          <div className="text-slate-500">Pay: {p.razorpayPaymentId || 'N/A'}</div>
+                        </div>
+                      )}
                     </td>
                     <td className="px-5 py-4 text-slate-400">
                       {new Date(p.createdAt).toLocaleString()}
@@ -179,6 +208,23 @@ export const AdminPayments = () => {
           </table>
         </div>
       </div>
+
+      {/* Proof Modal */}
+      {activeProof && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/80 backdrop-blur-md">
+          <div className="relative max-w-lg w-full bg-navy-900 border border-slate-800 rounded-3xl p-4 space-y-3">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-800">
+              <span className="text-xs font-bold text-white">Customer Payment Receipt Proof</span>
+              <button onClick={() => setActiveProof(null)} className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="max-h-96 overflow-auto rounded-xl">
+              <img src={activeProof} alt="Payment Proof" className="w-full object-contain rounded-xl" />
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
