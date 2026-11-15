@@ -14,6 +14,7 @@ import {
   ChevronRight,
   Send,
   X,
+  Download,
 } from 'lucide-react';
 
 export const AdminOrders = () => {
@@ -135,15 +136,72 @@ export const AdminOrders = () => {
     }
   };
 
+  const exportOrdersCSV = () => {
+    if (!orders || orders.length === 0) {
+      alert('No orders available to export.');
+      return;
+    }
+
+    const headers = [
+      'Order Number',
+      'Project Title',
+      'Customer Name',
+      'Customer Email',
+      'Phone',
+      'Total Amount (INR)',
+      'Advance Amount',
+      'Remaining Amount',
+      'Payment Status',
+      'Project Status',
+      'Scheduled Date',
+      'Created Date',
+    ];
+
+    const rows = orders.map((o) => [
+      `"${o.orderNumber || ''}"`,
+      `"${(o.projectTitle || '').replace(/"/g, '""')}"`,
+      `"${(o.userId?.name || '').replace(/"/g, '""')}"`,
+      `"${(o.userId?.email || '').replace(/"/g, '""')}"`,
+      `"${(o.userId?.phone || '').replace(/"/g, '""')}"`,
+      o.totalAmount || 0,
+      o.advanceAmount || 0,
+      o.remainingAmount || 0,
+      `"${o.paymentStatus || ''}"`,
+      `"${o.projectStatus || ''}"`,
+      `"${o.scheduledDate ? new Date(o.scheduledDate).toISOString().split('T')[0] : ''}"`,
+      `"${o.createdAt ? new Date(o.createdAt).toISOString() : ''}"`,
+    ]);
+
+    const csvContent =
+      'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `NWT_Orders_Audit_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-6">
       
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-white">Project Order Management</h1>
-        <p className="text-xs text-slate-400 mt-0.5">
-          Approve bookings, update live milestone progress, reschedule kickoff slots, and trigger remaining balance requests
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Project Order Management</h1>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Approve bookings, update live milestone progress, reschedule kickoff slots, and trigger remaining balance requests
+          </p>
+        </div>
+
+        <button
+          onClick={exportOrdersCSV}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-navy-900 border border-slate-700/80 hover:border-violet-500/50 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold transition shrink-0 shadow-sm"
+        >
+          <Download className="w-4 h-4 text-violet-400" />
+          <span>Export Orders (CSV)</span>
+        </button>
       </div>
 
       {/* Search & Filter Bar */}

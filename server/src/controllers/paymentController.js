@@ -2,6 +2,7 @@ import Payment from '../models/Payment.js';
 import Order from '../models/Order.js';
 import Booking from '../models/Booking.js';
 import CalendarEvent from '../models/CalendarEvent.js';
+import Setting from '../models/Setting.js';
 import { verifyRazorpaySignature, verifyWebhookSignature, createRazorpayOrder, getRazorpayKeyId } from '../config/razorpay.js';
 import { generatePaymentReference } from '../utils/helpers.js';
 import { syncToGoogleCalendar } from '../config/googleCalendar.js';
@@ -158,13 +159,19 @@ export const verifyPayment = async (req, res, next) => {
 // @access  Public
 export const getQrConfig = async (req, res, next) => {
   try {
-    const upiId = process.env.COMPANY_UPI_ID || 'nwtinfo@okaxis';
-    const payeeName = process.env.COMPANY_PAYEE_NAME || 'NWT Info (Next World Tech)';
+    const setting = await Setting.findOne();
+    const upiId = setting?.companyUpiId || process.env.COMPANY_UPI_ID || 'nwtinfo@okaxis';
+    const payeeName = setting?.companyPayeeName || process.env.COMPANY_PAYEE_NAME || 'NWT Info (Next World Tech)';
+    const upiQrEnabled = setting ? setting.upiQrEnabled : true;
+    const razorpayEnabled = setting ? setting.razorpayEnabled : true;
+
     res.status(200).json({
       success: true,
       data: {
         upiId,
         payeeName,
+        upiQrEnabled,
+        razorpayEnabled,
       },
     });
   } catch (error) {

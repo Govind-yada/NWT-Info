@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   Image as ImageIcon,
   X,
+  Download,
 } from 'lucide-react';
 
 export const AdminPayments = () => {
@@ -54,15 +55,70 @@ export const AdminPayments = () => {
     fetchPayments();
   }, [typeFilter, statusFilter]);
 
+  const exportPaymentsCSV = () => {
+    if (!payments || payments.length === 0) {
+      alert('No payments available to export.');
+      return;
+    }
+
+    const headers = [
+      'Payment Reference',
+      'Order Number',
+      'Customer Name',
+      'Customer Email',
+      'Amount (INR)',
+      'Type',
+      'Payment Method',
+      'Status',
+      'Razorpay Payment ID',
+      'UPI UTR Reference',
+      'Transaction Date',
+    ];
+
+    const rows = payments.map((p) => [
+      `"${p.paymentReference || ''}"`,
+      `"${p.orderId?.orderNumber || ''}"`,
+      `"${(p.userId?.name || '').replace(/"/g, '""')}"`,
+      `"${(p.userId?.email || '').replace(/"/g, '""')}"`,
+      p.amount || 0,
+      `"${p.type || ''}"`,
+      `"${p.paymentMethod || 'razorpay'}"`,
+      `"${p.status || ''}"`,
+      `"${p.razorpayPaymentId || ''}"`,
+      `"${p.upiTransactionId || ''}"`,
+      `"${p.createdAt ? new Date(p.createdAt).toISOString() : ''}"`,
+    ]);
+
+    const csvContent =
+      'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `NWT_Payments_Ledger_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-6">
       
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-white">Payment & Revenue Ledger</h1>
-        <p className="text-xs text-slate-400 mt-0.5">
-          Audited Razorpay payment records, 30% advances, and 70% remaining balance settlements
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Payment & Revenue Ledger</h1>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Audited Razorpay payment records, 30% advances, and 70% remaining balance settlements
+          </p>
+        </div>
+
+        <button
+          onClick={exportPaymentsCSV}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-navy-900 border border-slate-700/80 hover:border-violet-500/50 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold transition shrink-0 shadow-sm"
+        >
+          <Download className="w-4 h-4 text-violet-400" />
+          <span>Export Ledger (CSV)</span>
+        </button>
       </div>
 
       {/* Summary Cards */}

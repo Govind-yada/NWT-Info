@@ -19,6 +19,8 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   PanelLeft,
+  Terminal,
+  Settings,
 } from 'lucide-react';
 
 export const AdminLayout = () => {
@@ -49,6 +51,7 @@ export const AdminLayout = () => {
 
   const adminMenu = [
     { name: 'Dashboard Overview', path: '/admin', icon: LayoutDashboard },
+    { name: 'Admin Terminal', path: '/admin/terminal', icon: Terminal },
     { name: 'Service Management', path: '/admin/services', icon: Layers },
     { name: 'Package Tiers', path: '/admin/packages', icon: PackageIcon },
     { name: 'Project Orders', path: '/admin/orders', icon: ShoppingBag },
@@ -56,6 +59,7 @@ export const AdminLayout = () => {
     { name: 'Calendar & Slots', path: '/admin/calendar', icon: CalendarDays },
     { name: 'Customer Directory', path: '/admin/customers', icon: Users },
     { name: 'Content CMS', path: '/admin/content', icon: FileEdit },
+    { name: 'Platform Settings', path: '/admin/settings', icon: Settings },
   ];
 
   const getCurrentPageTitle = () => {

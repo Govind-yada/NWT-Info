@@ -206,7 +206,7 @@ export const CustomerLayout = () => {
           {isAdmin && (
             <div className="relative group">
               <Link
-                to="/admin"
+                to="/admin/terminal"
                 className={`flex items-center gap-2 py-2 rounded-xl text-xs text-violet-300 bg-violet-950/60 border border-violet-800/60 hover:bg-violet-900/60 transition font-medium ${
                   isCollapsed && !mobileOpen ? 'justify-center px-0' : 'px-3'
                 }`}

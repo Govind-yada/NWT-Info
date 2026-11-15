@@ -12,6 +12,8 @@ import {
   ArrowRight,
   ShieldAlert,
   Sparkles,
+  Terminal,
+  Settings,
 } from 'lucide-react';
 import {
   AreaChart,
@@ -73,6 +75,23 @@ export const AdminDashboard = () => {
             <span>Platform Overview & Executive Analytics</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white">NWT Admin Operations</h1>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <Link
+            to="/admin/terminal"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-600/20 hover:bg-violet-600/30 border border-violet-500/40 text-violet-300 hover:text-white text-xs font-bold transition shadow-glow-sm"
+          >
+            <Terminal className="w-4 h-4 text-violet-400" />
+            <span>Launch Admin Terminal</span>
+          </Link>
+          <Link
+            to="/admin/settings"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-navy-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white text-xs font-semibold transition"
+          >
+            <Settings className="w-4 h-4 text-slate-400" />
+            <span>Settings</span>
+          </Link>
         </div>
       </div>
 

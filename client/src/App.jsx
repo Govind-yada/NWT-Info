@@ -40,6 +40,8 @@ import { AdminPayments } from './pages/admin/AdminPayments';
 import { AdminCalendar } from './pages/admin/AdminCalendar';
 import { AdminCustomers } from './pages/admin/AdminCustomers';
 import { AdminContent } from './pages/admin/AdminContent';
+import { AdminTerminal } from './pages/admin/AdminTerminal';
+import { AdminSettings } from './pages/admin/AdminSettings';
 
 // Public Layout with Navbar & Footer
 const PublicLayout = () => {
@@ -104,6 +106,7 @@ export default function App() {
               }
             >
               <Route index element={<AdminDashboard />} />
+              <Route path="terminal" element={<AdminTerminal />} />
               <Route path="services" element={<AdminServices />} />
               <Route path="packages" element={<AdminPackages />} />
               <Route path="orders" element={<AdminOrders />} />
@@ -111,6 +114,7 @@ export default function App() {
               <Route path="calendar" element={<AdminCalendar />} />
               <Route path="customers" element={<AdminCustomers />} />
               <Route path="content" element={<AdminContent />} />
+              <Route path="settings" element={<AdminSettings />} />
             </Route>
 
             {/* 404 Catch-All */}

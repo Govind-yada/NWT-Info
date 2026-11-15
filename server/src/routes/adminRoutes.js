@@ -2,7 +2,15 @@ import express from 'express';
 import { protect } from '../middleware/auth.js';
 import { authorizeAdmin } from '../middleware/admin.js';
 import { upload } from '../middleware/upload.js';
-import { getDashboardStats, getAdminCustomers, getCustomerDetails } from '../controllers/adminController.js';
+import {
+  getDashboardStats,
+  getAdminCustomers,
+  getCustomerDetails,
+  executeTerminalCommand,
+  getPlatformSettings,
+  updatePlatformSettings,
+  changeAdminPassword,
+} from '../controllers/adminController.js';
 import { getAdminServices, createService, updateService, deleteService } from '../controllers/serviceController.js';
 import { createPackage, updatePackage, deletePackage } from '../controllers/packageController.js';
 import { getAdminOrders, updateProjectStatus, rescheduleOrder, requestRemainingPayment } from '../controllers/orderController.js';
@@ -70,5 +78,15 @@ router.delete('/testimonials/:id', deleteTestimonial);
 router.post('/faqs', createFAQ);
 router.put('/faqs/:id', updateFAQ);
 router.delete('/faqs/:id', deleteFAQ);
+
+// Interactive Admin Terminal Execution
+router.post('/terminal/execute', executeTerminalCommand);
+
+// Dynamic Platform Settings & Configuration
+router.get('/settings', getPlatformSettings);
+router.put('/settings', updatePlatformSettings);
+
+// Security & Password Management
+router.put('/change-password', changeAdminPassword);
 
 export default router;
