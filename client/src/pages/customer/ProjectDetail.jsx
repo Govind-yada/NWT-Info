@@ -42,6 +42,17 @@ export const ProjectDetail = () => {
     payeeName: 'NWT Info (Next World Tech)',
   });
 
+  // Lock body scroll when payment modal is open
+  useEffect(() => {
+    if (showPaymentModal) {
+      const original = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = original;
+      };
+    }
+  }, [showPaymentModal]);
+
   const fetchOrder = async () => {
     try {
       const res = await api.get(`/orders/${id}`);
@@ -468,11 +479,11 @@ export const ProjectDetail = () => {
 
       {/* Settle Remaining Balance Modal */}
       {showPaymentModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/80 backdrop-blur-md animate-fadeIn">
-          <div className="relative w-full max-w-lg bg-navy-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden p-6 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-navy-950/85 backdrop-blur-md animate-fadeIn">
+          <div className="relative w-full max-w-lg max-h-[90vh] flex flex-col bg-navy-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden p-5 sm:p-6">
             
             {/* Modal Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+            <div className="shrink-0 flex items-center justify-between pb-3 border-b border-slate-800">
               <div>
                 <h3 className="text-base font-bold text-white">Settle 70% Milestone Balance</h3>
                 <p className="text-xs text-slate-400 mt-0.5">Order #{order.orderNumber} • {order.projectTitle}</p>
@@ -486,13 +497,15 @@ export const ProjectDetail = () => {
               </button>
             </div>
 
-            {/* Amount Summary */}
-            <div className="p-3.5 rounded-2xl bg-navy-950 border border-slate-800 flex justify-between items-center text-xs">
-              <span className="text-slate-400">Payable Remaining Balance:</span>
-              <span className="text-lg font-extrabold text-emerald-400">
-                ₹{order.remainingAmount.toLocaleString('en-IN')}
-              </span>
-            </div>
+            {/* Scrollable Modal Content */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar space-y-4 pt-3 pr-1">
+              {/* Amount Summary */}
+              <div className="p-3.5 rounded-2xl bg-navy-950 border border-slate-800 flex justify-between items-center text-xs">
+                <span className="text-slate-400">Payable Remaining Balance:</span>
+                <span className="text-lg font-extrabold text-emerald-400">
+                  ₹{order.remainingAmount.toLocaleString('en-IN')}
+                </span>
+              </div>
 
             {/* Method Tabs */}
             <div className="space-y-2">
@@ -643,6 +656,7 @@ export const ProjectDetail = () => {
               </div>
             )}
 
+            </div>
           </div>
         </div>
       )}

@@ -8,6 +8,16 @@ export const PaymentHistory = () => {
   const [activeProof, setActiveProof] = useState(null);
 
   useEffect(() => {
+    if (activeProof) {
+      const original = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = original;
+      };
+    }
+  }, [activeProof]);
+
+  useEffect(() => {
     const fetchPayments = async () => {
       try {
         const res = await api.get('/payments/my-payments');

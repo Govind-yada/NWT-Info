@@ -58,6 +58,17 @@ export const MultiStepBookingModal = () => {
   const [screenshotPreview, setScreenshotPreview] = useState(null);
   const [copiedUpi, setCopiedUpi] = useState(false);
 
+  // Prevent background scroll when modal is open
+  useEffect(() => {
+    if (isModalOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isModalOpen]);
+
   const handleCopyUpi = () => {
     const idToCopy = qrConfig?.upiId || 'nwtinfo@okaxis';
     navigator.clipboard.writeText(idToCopy);
@@ -250,11 +261,11 @@ export const MultiStepBookingModal = () => {
   if (!isModalOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/80 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-navy-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-navy-950/85 backdrop-blur-md">
+      <div className="relative w-full max-w-2xl max-h-[92vh] sm:max-h-[88vh] flex flex-col bg-navy-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden">
         
-        {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800/80 bg-navy-950/50">
+        {/* Modal Header (Fixed at top) */}
+        <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-800/80 bg-navy-950/70">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-blue-600/20 text-brand-blue flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-brand-electric" />
@@ -275,8 +286,8 @@ export const MultiStepBookingModal = () => {
           </button>
         </div>
 
-        {/* Step Progress Bar */}
-        <div className="px-6 pt-4 pb-2">
+        {/* Step Progress Bar (Fixed below header) */}
+        <div className="shrink-0 px-6 pt-3.5 pb-2 border-b border-slate-800/40 bg-navy-900/90">
           <div className="flex items-center justify-between mb-2">
             {['Contact', 'Project', 'Files', 'Date', 'Summary', 'Done'].map((label, idx) => {
               const stepNum = idx + 1;
@@ -312,14 +323,14 @@ export const MultiStepBookingModal = () => {
 
         {/* Error Alert */}
         {error && (
-          <div className="mx-6 mt-3 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center gap-2.5 text-rose-300 text-xs">
+          <div className="shrink-0 mx-6 mt-3 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center gap-2.5 text-rose-300 text-xs">
             <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
             <span>{error}</span>
           </div>
         )}
 
-        {/* Modal Body */}
-        <div className="p-6">
+        {/* Modal Body (Scrollable with smooth custom scrollbar) */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar overscroll-contain">
           
           {/* STEP 1: Customer Contact Info */}
           {currentStep === 1 && (
@@ -926,9 +937,9 @@ export const MultiStepBookingModal = () => {
 
         </div>
 
-        {/* Modal Footer Controls */}
+        {/* Modal Footer Controls (Fixed at bottom) */}
         {currentStep < 6 && (
-          <div className="relative z-10 flex items-center justify-between px-6 py-4 border-t border-slate-800/80 bg-navy-950/50">
+          <div className="shrink-0 relative z-10 flex items-center justify-between px-6 py-4 border-t border-slate-800/80 bg-navy-950/90">
             {currentStep > 1 ? (
               <button
                 type="button"

@@ -22,6 +22,16 @@ export const AdminPayments = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [activeProof, setActiveProof] = useState(null);
 
+  useEffect(() => {
+    if (activeProof) {
+      const original = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = original;
+      };
+    }
+  }, [activeProof]);
+
   const fetchPayments = async () => {
     try {
       let url = '/admin/payments?';

@@ -81,7 +81,7 @@ export const CustomerLayout = () => {
 
       {/* Sidebar Navigation */}
       <aside
-        className={`fixed md:sticky top-0 left-0 z-50 md:z-30 h-screen transition-all duration-300 ease-in-out flex flex-col justify-between border-r border-slate-800/80 bg-gradient-to-b from-navy-900/95 via-navy-950/95 to-navy-950/98 backdrop-blur-2xl shadow-2xl ${
+        className={`fixed md:sticky top-0 left-0 z-50 md:z-30 h-screen transition-all duration-300 ease-in-out flex flex-col justify-between overflow-y-auto overflow-x-hidden custom-scrollbar border-r border-slate-800/80 bg-gradient-to-b from-navy-900/95 via-navy-950/95 to-navy-950/98 backdrop-blur-2xl shadow-2xl ${
           mobileOpen ? 'translate-x-0 w-72 p-5' : '-translate-x-full md:translate-x-0'
         } ${
           isCollapsed ? 'md:w-20 md:p-3' : 'md:w-64 md:p-5'

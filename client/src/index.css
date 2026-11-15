@@ -3,15 +3,20 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+  }
   body {
     @apply bg-navy-950 text-slate-100 font-sans selection:bg-brand-blue selection:text-white;
+    overflow-x: hidden;
   }
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -20,11 +25,26 @@
 
 ::-webkit-scrollbar-thumb {
   background: #1E293B;
-  border-radius: 4px;
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
+  background: #3B82F6;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #334155 #0A0F1D;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
   background: #334155;
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #3B82F6;
 }
 
 /* Glassmorphism helpers */

@@ -56,6 +56,16 @@ export const AdminOrders = () => {
     fetchOrders();
   }, [statusFilter]);
 
+  useEffect(() => {
+    if (statusModalOpen || rescheduleModalOpen) {
+      const original = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = original;
+      };
+    }
+  }, [statusModalOpen, rescheduleModalOpen]);
+
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     fetchOrders();
