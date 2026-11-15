@@ -7,7 +7,7 @@ export const Footer = () => {
     <footer className="bg-navy-950 border-t border-slate-800/80 pt-16 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-slate-800/60">
-          
+
           {/* Brand Info */}
           <div className="lg:col-span-2 space-y-4">
             <Link to="/" className="flex items-center gap-3">
@@ -91,7 +91,7 @@ export const Footer = () => {
               </div>
               <div className="flex items-center gap-2.5">
                 <Phone className="w-4 h-4 text-brand-electric shrink-0" />
-                <span>+91 98765 43210</span>
+                <span>+91 7859088239</span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-brand-electric shrink-0" />
