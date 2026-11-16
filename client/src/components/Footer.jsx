@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin, Shield, CheckCircle2, ArrowUpRight } from 'lucide-react';
 import { WhatsAppIcon } from './WhatsAppIcon';
+import { InstagramIcon, FacebookIcon } from './SocialIcons';
 
 export const Footer = () => {
   return (
@@ -111,6 +112,26 @@ export const Footer = () => {
                 <Mail className="w-4 h-4 text-brand-electric shrink-0" />
                 <span>contact@nwtinfo.com</span>
               </div>
+              <a
+                href="https://www.instagram.com/nwtinfotech?utm_source=qr&mdxt=ZjhuMzVkN296bmFy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2.5 text-pink-400 hover:text-pink-300 font-medium transition group"
+                title="Follow us on Instagram (@nwtinfotech)"
+              >
+                <InstagramIcon className="w-4 h-4 fill-current shrink-0 group-hover:scale-110 transition-transform" />
+                <span>Instagram: @nwtinfotech</span>
+              </a>
+              <a
+                href="https://www.facebook.com/share/19qZ84VoMM/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2.5 text-blue-400 hover:text-blue-300 font-medium transition group"
+                title="Follow us on Facebook"
+              >
+                <FacebookIcon className="w-4 h-4 fill-current shrink-0 group-hover:scale-110 transition-transform" />
+                <span>Facebook: NWT Info</span>
+              </a>
               <div className="pt-2">
                 <Link
                   to="/login?admin=true"
@@ -127,7 +148,38 @@ export const Footer = () => {
         {/* Bottom Bar */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <p>© {new Date().getFullYear()} NWT Info (Next World Tech). All rights reserved.</p>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
+            <a
+              href="https://www.instagram.com/nwtinfotech?utm_source=qr&mdxt=ZjhuMzVkN296bmFy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-pink-400 hover:text-white hover:bg-pink-600 transition"
+              title="Instagram Profile"
+              aria-label="Instagram Profile"
+            >
+              <InstagramIcon className="w-3.5 h-3.5 fill-current" />
+            </a>
+            <a
+              href="https://www.facebook.com/share/19qZ84VoMM/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-blue-400 hover:text-white hover:bg-blue-600 transition"
+              title="Facebook Profile"
+              aria-label="Facebook Profile"
+            >
+              <FacebookIcon className="w-3.5 h-3.5 fill-current" />
+            </a>
+            <a
+              href="https://wa.me/917859088239"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-emerald-400 hover:text-white hover:bg-emerald-600 transition"
+              title="WhatsApp Chat"
+              aria-label="WhatsApp Chat"
+            >
+              <WhatsAppIcon className="w-3.5 h-3.5 fill-current" />
+            </a>
+            <span className="text-slate-700">|</span>
             <span className="hover:text-slate-400 cursor-pointer">Privacy Policy</span>
             <span className="hover:text-slate-400 cursor-pointer">Terms of Service</span>
             <span className="hover:text-slate-400 cursor-pointer">30% Advance Policy</span>

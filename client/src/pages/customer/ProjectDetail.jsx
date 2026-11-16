@@ -562,20 +562,28 @@ export const ProjectDetail = () => {
             ) : (
               <div className="space-y-3 p-3.5 rounded-2xl bg-navy-950 border border-purple-500/30">
                 <div className="flex flex-col sm:flex-row items-center gap-4">
-                  <div className="p-2.5 bg-white rounded-2xl shadow-md border-2 border-slate-700 shrink-0 flex items-center justify-center">
-                    <QRCodeSVG
-                      value={`upi://pay?pa=${encodeURIComponent(qrConfig?.upiId || 'nwtinfo@okaxis')}&pn=${encodeURIComponent(qrConfig?.payeeName || 'NWT Info')}&am=${order.remainingAmount}&cu=INR&tn=${encodeURIComponent('70% Balance ' + order.orderNumber)}`}
-                      size={130}
-                      level="H"
+                  <div className="p-2.5 bg-white rounded-2xl shadow-xl border-2 border-purple-500/40 shrink-0 flex flex-col items-center justify-center">
+                    <img
+                      src="/images/gpay-upi-qr.jpg"
+                      alt="Implex Cart International Google Pay QR"
+                      className="w-36 sm:w-40 h-auto object-contain rounded-xl"
                     />
+                    <span className="text-[9px] font-extrabold text-slate-800 mt-1 uppercase tracking-wider text-center">
+                      Scan & Pay with Any UPI App
+                    </span>
                   </div>
 
                   <div className="flex-1 space-y-2 text-xs text-left w-full">
                     <div>
-                      <span className="text-[10px] text-slate-400 uppercase font-semibold block">Company UPI ID</span>
+                      <span className="text-[10px] text-slate-400 uppercase font-semibold block">Payee Beneficiary</span>
+                      <span className="font-bold text-white text-sm">{qrConfig?.payeeName || 'Implex Cart International'}</span>
+                    </div>
+
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase font-semibold block">Official UPI ID</span>
                       <div className="flex items-center gap-2 mt-0.5">
                         <code className="px-2 py-0.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-mono font-semibold text-brand-electric">
-                          {qrConfig?.upiId || 'nwtinfo@okaxis'}
+                          {qrConfig?.upiId || '7859088239@okbizaxis'}
                         </code>
                         <button
                           type="button"

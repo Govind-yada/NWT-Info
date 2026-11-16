@@ -83,7 +83,7 @@ export const seedDatabase = async () => {
           'Razorpay payment gateway ready',
           'Admin content management controls',
         ],
-        startingPrice: 6999,
+        startingPrice: 1999,
         order: 1,
         isActive: true,
       },
@@ -217,11 +217,11 @@ export const seedDatabase = async () => {
       // Website Development Packages
       {
         serviceId: webDevService._id,
-        name: 'Static Website',
+        name: 'Static*',
         slug: 'static-website',
         description: 'Ideal for small businesses and individuals looking for a sleek, fast, and informative web presence.',
-        price: 6999,
-        discountPrice: 8999,
+        price: 1999,
+        discountPrice: 2999,
         deliveryEstimate: '5-7 Business Days',
         features: [
           'Up to 5 Responsive Pages (Home, About, Services, Gallery, Contact)',
@@ -237,11 +237,11 @@ export const seedDatabase = async () => {
       },
       {
         serviceId: webDevService._id,
-        name: 'Classic Website',
+        name: 'Classic*',
         slug: 'classic-website',
         description: 'Perfect for growing companies needing dynamic content, customer interaction, and service showcases.',
-        price: 9999,
-        discountPrice: 12999,
+        price: 3999,
+        discountPrice: 5999,
         deliveryEstimate: '8-10 Business Days',
         features: [
           'Up to 10 Custom Designed Pages',
@@ -259,11 +259,11 @@ export const seedDatabase = async () => {
       },
       {
         serviceId: webDevService._id,
-        name: 'Premium Website',
+        name: 'Premium*',
         slug: 'premium-website',
         description: 'Full-featured enterprise portal with custom animations, multi-step forms, and custom integrations.',
-        price: 18999,
-        discountPrice: 24999,
+        price: 5999,
+        discountPrice: 8999,
         deliveryEstimate: '14-18 Business Days',
         features: [
           'Unlimited Custom Styled Pages',

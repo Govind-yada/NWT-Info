@@ -21,9 +21,9 @@ services:
       - key: MONGODB_URI
         sync: false
       - key: COMPANY_UPI_ID
-        value: nwtinfo@okaxis
+        value: 7859088239@okbizaxis
       - key: COMPANY_PAYEE_NAME
-        value: NWT Info (Next World Tech)
+        value: Implex Cart International
       - key: RAZORPAY_KEY_ID
         value: rzp_test_mockKeyId12345
       - key: RAZORPAY_KEY_SECRET

@@ -29,12 +29,12 @@ const settingSchema = new mongoose.Schema(
     },
     companyUpiId: {
       type: String,
-      default: 'nwtinfo@okaxis',
+      default: '7859088239@okbizaxis',
       trim: true,
     },
     companyPayeeName: {
       type: String,
-      default: 'NWT Info (Next World Tech)',
+      default: 'Implex Cart International',
       trim: true,
     },
     advancePercentage: {

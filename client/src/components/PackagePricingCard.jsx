@@ -28,7 +28,10 @@ export const PackagePricingCard = ({ pkg, service }) => {
         {/* Tier Header */}
         <div className="mb-4">
           <div className="flex items-center justify-between">
-            <h4 className="text-lg font-bold text-white">{pkg.name}</h4>
+            <div className="flex items-center gap-1.5">
+              <h4 className="text-lg font-bold text-white">{pkg.name}</h4>
+              <span className="text-amber-400 font-extrabold text-sm" title="Featured Tier">★</span>
+            </div>
             <div className="flex items-center gap-1 text-[11px] text-slate-400 bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-800">
               <Clock className="w-3 h-3 text-blue-400" />
               <span>{pkg.deliveryEstimate}</span>
@@ -42,6 +45,7 @@ export const PackagePricingCard = ({ pkg, service }) => {
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-extrabold text-white">
               ₹{total.toLocaleString('en-IN')}
+              <span className="text-amber-400 text-lg ml-0.5">*</span>
             </span>
             {pkg.discountPrice && (
               <span className="text-xs text-slate-500 line-through">
